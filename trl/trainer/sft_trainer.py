@@ -92,6 +92,9 @@ class SFTTrainer(Trainer):
             The PeftConfig object to use to initialize the PeftModel.
         formatting_func (`Optional[Callable]`):
             The formatting function to be used for creating the `ConstantLengthDataset`.
+        compute_loss_func (`Callable`, *optional*):
+            A function that accepts the raw model outputs, labels, and the number of items in the entire accumulated
+            batch (batch_size * gradient_accumulation_steps) and returns the loss. For example, see the default [loss function](https://github.com/huggingface/transformers/blob/052e652d6d53c2b26ffde87e039b723949a53493/src/transformers/trainer.py#L3618) used by [`Trainer`].
     """
 
     _tag_names = ["trl", "sft"]
@@ -140,6 +143,7 @@ class SFTTrainer(Trainer):
         model_init_kwargs: Optional[Dict] = None,
         dataset_kwargs: Optional[Dict] = None,
         eval_packing: Optional[bool] = None,
+        compute_loss_func: Optional[Callable[[EvalPrediction], dict]] = None,
     ):
         if args is None:
             output_dir = "tmp_trainer"
@@ -422,6 +426,7 @@ class SFTTrainer(Trainer):
             callbacks=callbacks,
             optimizers=optimizers,
             preprocess_logits_for_metrics=preprocess_logits_for_metrics,
+            compute_loss_func=compute_loss_func,
         )
 
         # Add tags for models that have been loaded with the correct transformers version
